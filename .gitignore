@@ -1,0 +1,19 @@
+# 本地环境变量（口令等敏感配置不入库）
+.env
+.env.*
+
+# 构建产物：由 index.html / css / js / assets 复制生成，不入库
+dist/
+
+# 临时目录与缓存
+.shot_tmp/
+__pycache__/
+*.pyc
+
+# 打包产物
+*.zip
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+desktop.ini

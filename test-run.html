@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>TEST</title></head>
+<body>
+<iframe id="app" src="index.html" style="width:1200px;height:900px;border:0"></iframe>
+<pre id="res">running</pre>
+<script>
+const out = [];
+const ok = (c, m) => out.push((c ? "PASS" : "FAIL") + " - " + m);
+
+const frame = document.getElementById("app");
+frame.onload = async () => {
+  const w = frame.contentWindow;
+  const d = frame.contentDocument;
+  const backup = {
+    games: localStorage.getItem("naiwa_games_v1"),
+    pwd: localStorage.getItem("naiwa_admin_pwd"),
+    login: sessionStorage.getItem("naiwa_admin_login")
+  };
+
+  try {
+    await new Promise(r => setTimeout(r, 300));
+    localStorage.removeItem("naiwa_admin_pwd");
+
+    // 基础渲染
+    ok(d.querySelectorAll(".game-card").length > 0, "游戏卡片渲染");
+    ok(d.querySelectorAll(".filter-chip").length >= 4, "分类筛选条渲染");
+    ok(!!d.querySelector(".topnav"), "顶部导航存在");
+    ok(d.querySelectorAll(".feather").length >= 8, "飘落羽毛动画元素");
+    ok(!!d.querySelector('button[title="全屏"]'), "试玩窗口含全屏按钮");
+
+    // 管理员登录（自动打开导入弹窗）
+    d.getElementById("pwdInput").value = "naiwa666";
+    w.Admin.login();
+    w.renderGames();
+    ok(w.Admin.isLogin === true, "管理员登录成功");
+    ok(d.querySelectorAll(".card-del").length === 0, "预设游戏不显示删除按钮");
+
+    // 校验文案
+    w.Admin.openAdd();
+    d.getElementById("gameName").value = "";
+    d.getElementById("gameUrl").value = "";
+    w.Admin.saveGame();
+    ok(d.getElementById("addErr").textContent === "请填写游戏名称", "名称为空提示正确");
+
+    d.getElementById("gameName").value = "测试游戏";
+    d.getElementById("gameUrl").value = "";
+    w.Admin.saveGame();
+    ok(d.getElementById("addErr").textContent === "请填写游戏链接", "链接为空提示正确");
+
+    d.getElementById("gameUrl").value = "abc def";
+    w.Admin.saveGame();
+    ok(d.getElementById("addErr").textContent === "链接格式不正确，请检查后重试", "非法链接提示正确");
+
+    // 正常导入
+    d.getElementById("gameUrl").value = "example.com/play";
+    d.getElementById("gameIntro").value = "测试简介";
+    w.Admin.saveGame();
+    const added = w.Store.getGames().find(g => g.name === "测试游戏");
+    ok(!!added && added.addedBy === "admin" && added.intro === "测试简介", "导入成功且数据结构正确");
+    ok(!!added && added.url === "https://example.com/play", "自动补全 https:// 前缀");
+    w.renderGames();
+    ok(d.querySelectorAll(".card-del").length === 1, "管理员添加的游戏可删除");
+    ok(d.body.innerHTML.indexOf("管理员添加") >= 0, "卡片标记为管理员添加");
+
+    // 批量导入
+    w.Admin.openAdd();
+    w.Admin.addTab("batch");
+    d.getElementById("batchInput").value = "游戏A,example.com/a\n游戏B，example.com/b\n坏行";
+    w.Admin.importBatch();
+    const g2 = w.Store.getGames();
+    ok(g2.filter(g => g.name === "游戏A" || g.name === "游戏B").length === 2, "批量导入 2 款成功");
+
+    // 分类筛选
+    w.renderGames();
+    const totalBefore = d.querySelectorAll(".game-card").length;
+    const chip = [...d.querySelectorAll(".filter-chip")].find(b => b.textContent === "动作");
+    chip.click();
+    const totalAfter = d.querySelectorAll(".game-card").length;
+    ok(totalAfter > 0 && totalAfter < totalBefore, "分类筛选生效");
+  } catch (e) {
+    out.push("FAIL - 异常: " + e.message);
+  }
+
+  // 还原现场
+  if (backup.games === null) localStorage.removeItem("naiwa_games_v1");
+  else localStorage.setItem("naiwa_games_v1", backup.games);
+  if (backup.pwd === null) localStorage.removeItem("naiwa_admin_pwd");
+  else localStorage.setItem("naiwa_admin_pwd", backup.pwd);
+  if (backup.login === null) sessionStorage.removeItem("naiwa_admin_login");
+  else sessionStorage.setItem("naiwa_admin_login", backup.login);
+
+  const fails = out.filter(x => x.indexOf("FAIL") === 0).length;
+  document.getElementById("res").textContent = out.join("\n");
+  document.title = fails ? ("FAIL:" + fails) : "PASS";
+};
+</script>
+</body>
+</html>

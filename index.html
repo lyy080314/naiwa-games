@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>玩转奶蛙 - 奶蛙小游戏大全</title>
+<meta name="description" content="玩转奶蛙：奶蛙小游戏在线大全，收集全网最好玩的奶蛙小游戏，管理员可一键导入外部游戏。">
+<link rel="icon" href="assets/img/frog-stand.jpg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="topnav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="javascript:void(0)" onclick="window.scrollTo({top:0,behavior:'smooth'})">🐸 玩转奶蛙</a>
+    <div class="nav-links">
+      <a href="#games">游戏乐园</a>
+      <a href="javascript:void(0)" onclick="document.getElementById('searchInput').focus();window.scrollTo({top:0,behavior:'smooth'})">搜索</a>
+    </div>
+    <div class="nav-right">
+      <a class="nav-admin" href="javascript:void(0)" onclick="Admin.askPassword()">管理员入口</a>
+      <div class="user-bar" id="userBar">
+        <button id="loginBtn" class="ub-btn" onclick="Auth.open('login')">👤 登录 / 注册</button>
+        <div id="userInfo" class="ub-user hidden">
+          <button class="ub-avatar" id="ubAvatar" onclick="Friends.open()" title="我的好友"></button>
+          <span class="ub-name" id="ubName"></span>
+          <button class="ub-link" onclick="Friends.open()">好友</button>
+          <button class="ub-link" onclick="Auth.logout()">退出</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 飘落羽毛 -->
+<div class="feather-layer" aria-hidden="true">
+  <span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span>
+  <span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span>
+  <span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span>
+  <span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span>
+</div>
+
+<!-- 背景与漂浮装饰 -->
+<div class="bg-layer"></div>
+<div class="float-layer" aria-hidden="true">
+  <img class="float-frog f1" src="assets/img/frog-stand.jpg" alt="">
+  <img class="float-frog f2" src="assets/img/frog-side.jpg" alt="">
+  <img class="float-frog f3" src="assets/img/frog-laugh.jpg" alt="">
+  <img class="float-frog f4" src="assets/img/frog-dance.jpg" alt="">
+  <span class="float-paw p1">🐾</span>
+  <span class="float-paw p2">🐾</span>
+  <span class="float-paw p3">✨</span>
+  <span class="float-paw p4">💛</span>
+</div>
+
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <img class="hero-frog" src="assets/img/frog-cloud.jpg" alt="奶蛙">
+    <div class="hero-text">
+      <h1>玩转<span class="accent">奶蛙</span> 🐸</h1>
+      <p class="slogan">呱呱天地 · 全网奶蛙小游戏一网打尽</p>
+      <div class="search-box">
+        <input id="searchInput" type="text" placeholder="搜索你想玩的奶蛙游戏…">
+        <button id="searchBtn">🔍 搜索</button>
+      </div>
+    </div>
+  </div>
+  <img class="hero-hat" src="assets/img/frog-hat.jpg" alt="">
+</header>
+
+<main class="container" id="games">
+  <section class="section-head">
+    <h2>🎮 游戏乐园</h2>
+    <span class="count" id="gameCount"></span>
+    <button id="adminAddBtn" class="btn-add hidden" onclick="Admin.openAdd()">➕ 导入游戏</button>
+    <button id="adminExitBtn" class="btn-exit hidden" onclick="Admin.logout()">退出管理</button>
+  </section>
+
+  <div class="filter-row" id="filterRow"></div>
+
+  <section id="gameGrid" class="game-grid"></section>
+  <p id="emptyTip" class="empty-tip hidden">呱…没有找到匹配的游戏</p>
+</main>
+
+<footer class="footer">
+  <img class="footer-frog" src="assets/img/frog-phone.jpg" alt="">
+  <p>玩转奶蛙 · 奶蛙爱好者的快乐星球</p>
+  <p class="footer-links">
+    <a href="javascript:void(0)" onclick="Admin.askPassword()">管理员入口</a>
+    <span>|</span>
+    <a href="javascript:void(0)" onclick="Admin.resetGames()">恢复默认游戏</a>
+  </p>
+  <p class="footer-tip">游戏均来自网络收集，版权归原作者所有</p>
+</footer>
+
+<!-- 游戏试玩弹窗 -->
+<div id="playModal" class="modal hidden">
+  <div class="modal-play">
+    <div class="play-bar">
+      <span class="play-title" id="playTitle">游戏名</span>
+      <div class="play-actions">
+        <button onclick="Social.toggleComments()" title="评论区">💬 <span id="playCommentCount">0</span></button>
+        <button onclick="Player.reload()" title="重新加载">🔄</button>
+        <button onclick="Player.fullscreen()" title="全屏">⛶</button>
+        <button onclick="Player.openNewTab()" title="在新窗口打开">↗</button>
+        <button onclick="Player.close()" title="关闭">✕</button>
+      </div>
+    </div>
+    <div id="embedWarn" class="embed-warn hidden">⚠️ 该站点可能禁止嵌入，请点击右上角 ↗ 在新窗口打开</div>
+    <div class="play-body">
+      <iframe id="playFrame" src="" allow="fullscreen; autoplay; gamepad" allowfullscreen referrerpolicy="no-referrer"></iframe>
+      <aside id="commentPanel" class="comment-panel hidden">
+        <div class="cp-head">
+          <span>💬 评论区</span>
+          <button onclick="Social.closeComments()" title="收起">✕</button>
+        </div>
+        <div id="commentList" class="cp-list"></div>
+        <div class="cp-input">
+          <div id="cpLoginTip" class="cp-login-tip">
+            <span>登录后即可参与评论</span>
+            <button class="btn primary" onclick="Auth.open('login')">去登录</button>
+          </div>
+          <div id="cpForm" class="cp-form hidden">
+            <textarea id="commentText" maxlength="200" placeholder="说点什么吧…（最多 200 字）"></textarea>
+            <button class="btn primary" onclick="Social.sendComment()">发送</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="play-tip">如果游戏区域空白，可能是该站点禁止内嵌，点击右上角 ↗ 在新窗口游玩</div>
+  </div>
+</div>
+
+<!-- 管理员密码弹窗 -->
+<div id="pwdModal" class="modal hidden">
+  <div class="dialog">
+    <h3>🔐 管理员登录</h3>
+    <p class="dialog-sub">请输入管理员密码</p>
+    <input id="pwdInput" type="password" placeholder="管理员密码">
+    <p class="dialog-err hidden" id="pwdErr">密码错误，请重试</p>
+    <div class="dialog-btns">
+      <button class="btn ghost" onclick="Admin.closePwd()">取消</button>
+      <button class="btn primary" onclick="Admin.login()">登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加/编辑游戏弹窗 -->
+<div id="addModal" class="modal hidden">
+  <div class="dialog add-dialog">
+    <h3>🐸 导入外部游戏</h3>
+    <p class="dialog-sub">单个导入或批量粘贴，一键上架游戏乐园</p>
+
+    <div class="add-tabs">
+      <button id="addTabOne" class="active" onclick="Admin.addTab('one')">单个导入</button>
+      <button id="addTabBatch" onclick="Admin.addTab('batch')">批量导入</button>
+    </div>
+
+    <div id="addOne">
+      <label>游戏名称</label>
+      <input id="gameName" type="text" placeholder="例如：奶蛙跳跃">
+      <label>游戏链接</label>
+      <input id="gameUrl" type="text" placeholder="https://…（可省略 https://）">
+      <label>游戏简介（可选）</label>
+      <input id="gameIntro" type="text" maxlength="60" placeholder="一句话介绍这款游戏">
+      <label>封面缩略图（可选）</label>
+      <div class="cover-row">
+        <input id="gameCover" type="text" placeholder="图片链接，或点右侧上传">
+        <button type="button" class="btn ghost cover-btn" onclick="document.getElementById('gameCoverFile').click()">上传</button>
+        <input id="gameCoverFile" type="file" accept="image/*" class="hidden" onchange="Admin.pickCover(event)">
+      </div>
+      <img id="gameCoverPreview" class="cover-preview hidden" alt="封面预览">
+    </div>
+
+    <div id="addBatch" class="hidden">
+      <label>批量文本</label>
+      <textarea id="batchInput" class="batch-input" placeholder="每行一个游戏，格式：名称,链接&#10;奶蛙跳跃,https://example.com/play&#10;奶蛙赛跑,example.com/run"></textarea>
+      <p class="batch-tip">每行一条，支持英文/中文逗号分隔，链接可省略 https://</p>
+    </div>
+
+    <p class="dialog-err hidden" id="addErr"></p>
+    <div class="dialog-btns">
+      <button class="btn ghost" onclick="Admin.closeAdd()">取消</button>
+      <button class="btn primary" id="addSubmitBtn" onclick="Admin.submitAdd()">导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 账号弹窗 -->
+<div id="authModal" class="modal hidden">
+  <div class="dialog">
+    <div class="auth-tabs">
+      <button id="tabLogin" class="active" onclick="Auth.switchTab('login')">登录</button>
+      <button id="tabRegister" onclick="Auth.switchTab('register')">注册</button>
+    </div>
+    <label>奶蛙昵称</label>
+    <input id="authUser" type="text" maxlength="12" placeholder="2-12 个字符，支持中英文">
+    <label>密码</label>
+    <input id="authPass" type="password" maxlength="32" placeholder="至少 4 位">
+    <label id="authPass2Label" class="hidden">确认密码</label>
+    <input id="authPass2" class="hidden" type="password" maxlength="32" placeholder="再输入一次密码">
+    <p class="dialog-err hidden" id="authErr"></p>
+    <div class="dialog-btns">
+      <button class="btn ghost" onclick="Auth.close()">取消</button>
+      <button class="btn primary" onclick="Auth.submit()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 好友弹窗 -->
+<div id="friendsModal" class="modal hidden">
+  <div class="dialog friends-dialog">
+    <h3>🐸 我的好友</h3>
+    <p class="dialog-sub">输入对方昵称即可发送好友请求</p>
+    <div class="friend-add">
+      <input id="friendInput" type="text" maxlength="12" placeholder="对方昵称">
+      <button class="btn primary" onclick="Friends.request()">添加</button>
+    </div>
+    <p class="dialog-err hidden" id="friendErr"></p>
+    <div class="friend-section">
+      <h4>待处理请求 <span class="friend-num" id="reqCount">0</span></h4>
+      <div id="reqList" class="friend-list"></div>
+    </div>
+    <div class="friend-section">
+      <h4>我的好友 <span class="friend-num" id="friendCount">0</span></h4>
+      <div id="friendList" class="friend-list"></div>
+    </div>
+    <div class="dialog-btns">
+      <button class="btn ghost" onclick="Friends.close()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 提示气泡 -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/config.js"></script>
+<script src="js/main.js"></script>
+<script src="js/social.js"></script>
+</body>
+</html>
